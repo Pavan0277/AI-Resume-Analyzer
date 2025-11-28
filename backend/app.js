@@ -5,7 +5,12 @@ import resumeRoutes from "./routes/resumeRoutes.js";
 const app = express();
 
 // Middleware
-app.use(cors());
+const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173';
+
+app.use(cors({
+    origin: corsOrigin,
+}));
+
 app.use(json());
 
 // Routes
