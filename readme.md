@@ -6,7 +6,7 @@ An AI-powered web application that analyzes resumes and provides comprehensive f
 ![React](https://img.shields.io/badge/React-19.2.0-61DAFB?style=flat-square&logo=react)
 ![Node.js](https://img.shields.io/badge/Node.js-22.x-339933?style=flat-square&logo=node.js)
 ![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat-square&logo=mongodb)
-![OpenAI](https://img.shields.io/badge/OpenAI-GPT--3.5-412991?style=flat-square&logo=openai)
+![OpenAI](https://img.shields.io/badge/OpenAI-GPT--5.1-412991?style=flat-square&logo=openai)
 
 ---
 
