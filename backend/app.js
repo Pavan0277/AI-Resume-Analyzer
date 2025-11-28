@@ -11,4 +11,8 @@ app.use(json());
 // Routes
 app.use("/api", resumeRoutes);
 
+app.get("/", (req, res) => {
+    res.send("Resume Analysis API is running");
+});
+
 export default app;
