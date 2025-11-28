@@ -1,0 +1,10 @@
+import { Router } from "express";
+import multer from "multer";
+import { analyzeResume } from "../controllers/resumeController.js";
+
+const router = Router();
+const upload = multer({ dest: "uploads/" });
+
+router.post("/analyze", upload.single("resume"), analyzeResume);
+
+export default router;
