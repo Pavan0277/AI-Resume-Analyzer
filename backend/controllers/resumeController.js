@@ -123,3 +123,114 @@ Be thorough but realistic with scoring. Respond ONLY with valid JSON.`;
         res.status(500).json({ error: "Failed to analyze resume" });
     }
 };
+
+// Get resume history with pagination and filters
+export const getResumeHistory = async (req, res) => {
+    try {
+        const {
+            page = 1,
+            limit = 10,
+            skills,
+            suggested_roles,
+            minScore,
+            maxScore,
+            sortBy = "createdAt",
+            sortOrder = "desc",
+        } = req.query;
+
+        // Build filter query
+        const filter = {};
+
+        if (skills) {
+            const skillsArray = skills.split(",").map((s) => s.trim());
+            filter["aiSummary.skills"] = {
+                $in: skillsArray.map((s) => new RegExp(s, "i")),
+            };
+        }
+
+        if (suggested_roles) {
+            const rolesArray = suggested_roles.split(",").map((r) => r.trim());
+            filter["aiSummary.suggested_roles"] = {
+                $in: rolesArray.map((r) => new RegExp(r, "i")),
+            };
+        }
+
+        if (minScore || maxScore) {
+            filter["aiSummary.overall_score"] = {};
+            if (minScore)
+                filter["aiSummary.overall_score"].$gte = Number(minScore);
+            if (maxScore)
+                filter["aiSummary.overall_score"].$lte = Number(maxScore);
+        }
+
+        // Calculate pagination
+        const skip = (Number(page) - 1) * Number(limit);
+
+        // Build sort object
+        const sort = {};
+        sort[sortBy === "score" ? "aiSummary.overall_score" : sortBy] =
+            sortOrder === "asc" ? 1 : -1;
+
+        // Execute query
+        const [resumes, total] = await Promise.all([
+            Resume.find(filter)
+                .select("-resumeText") // Exclude large text field
+                .sort(sort)
+                .skip(skip)
+                .limit(Number(limit))
+                .lean(),
+            Resume.countDocuments(filter),
+        ]);
+
+        res.json({
+            resumes,
+            pagination: {
+                currentPage: Number(page),
+                totalPages: Math.ceil(total / Number(limit)),
+                totalItems: total,
+                itemsPerPage: Number(limit),
+                hasNext: skip + resumes.length < total,
+                hasPrev: Number(page) > 1,
+            },
+        });
+    } catch (error) {
+        console.error("Error fetching resume history:", error);
+        res.status(500).json({ error: "Failed to fetch resume history" });
+    }
+};
+
+// Get single resume by ID
+export const getResumeById = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const resume = await Resume.findById(id).lean();
+
+        if (!resume) {
+            return res.status(404).json({ error: "Resume not found" });
+        }
+
+        res.json(resume);
+    } catch (error) {
+        console.error("Error fetching resume:", error);
+        res.status(500).json({ error: "Failed to fetch resume" });
+    }
+};
+
+// Get filter options (unique skills and roles)
+export const getFilterOptions = async (req, res) => {
+    try {
+        const [skills, roles] = await Promise.all([
+            Resume.distinct("aiSummary.skills"),
+            Resume.distinct("aiSummary.suggested_roles"),
+        ]);
+
+        res.json({
+            skills: skills.filter(Boolean).sort(),
+            suggested_roles: roles.filter(Boolean).sort(),
+        });
+    } catch (error) {
+        console.error("Error fetching filter options:", error);
+        res.status(500).json({ error: "Failed to fetch filter options" });
+    }
+};

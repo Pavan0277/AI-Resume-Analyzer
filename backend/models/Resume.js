@@ -27,4 +27,10 @@ const ResumeSchema = new mongoose.Schema({
     },
 });
 
+// Add indexes for efficient filtering and sorting
+ResumeSchema.index({ "aiSummary.skills": 1 });
+ResumeSchema.index({ "aiSummary.suggested_roles": 1 });
+ResumeSchema.index({ "aiSummary.overall_score": -1 });
+ResumeSchema.index({ createdAt: -1 });
+
 export default mongoose.model("Resume", ResumeSchema);
